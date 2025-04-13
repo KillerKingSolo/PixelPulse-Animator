@@ -19,25 +19,35 @@
     "electron-builder": "^26.0.12"
   },
   "build": {
-    "appId": "com.pixelpulse.animator",
-    "productName": "PixelPulse Animator",
-    "files": [
-      "**/*",
-      "!node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
-      "!node_modules/.bin",
-      "!**/*.map"
-    ],
-    "directories": {
-      "buildResources": "build"
+      "appId": "com.pixelpulse.animator",
+      "productName": "PixelPulse Animator",
+      "asar": true,
+      "files": [
+        "**/*",
+        "!node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+        "!node_modules/.bin",
+        "!**/*.map"
+      ],
+      "directories": {
+        "buildResources": "build"
+      },
+      "win": {
+        "target": "nsis",
+        "artifactName": "PixelPulse_Animator_Setup_${version}.exe"
+      },
+      "mac": {
+        "target": "dmg"
+      },
+      "linux": {
+        "target": "AppImage"
+      },
+      "publish": [
+        {
+          "provider": "github"
+        }
+      ]
     },
-    "win": {
-      "target": "nsis"
-    },
-    "mac": {
-      "target": "dmg"
-    },
-    "linux": {
-      "target": "AppImage"
-    }
+  "dependencies": {
+    "electron-updater": "^6.6.2"
   }
 }
