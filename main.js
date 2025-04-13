@@ -1,4 +1,5 @@
 const { app, BrowserWindow } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
 function createWindow () {
@@ -12,6 +13,18 @@ function createWindow () {
   });
 
   win.loadFile('index.html');
+
+  // Auto-update: check for updates on app ready
+  if (app.isPackaged) {
+    autoUpdater.checkForUpdatesAndNotify();
+    autoUpdater.on('update-available', () => {
+      win.webContents.send('update_available');
+    });
+    autoUpdater.on('update-downloaded', () => {
+      win.webContents.send('update_downloaded');
+    });
+  }
+
   win.setMenuBarVisibility(true);
 }
 
