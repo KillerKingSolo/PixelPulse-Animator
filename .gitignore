@@ -1,0 +1,12 @@
+# Ignore build output and dependencies
+dist/
+win-unpacked/
+node_modules/
+*.exe
+*.dmg
+*.AppImage
+*.blockmap
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/

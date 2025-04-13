@@ -1,0 +1,215 @@
+/* Pixel Art Animation Maker Styles */
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #222;
+  color: #f0f0f0;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-width: 100vw;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+header, footer {
+  text-align: center;
+  padding: 1em 0;
+  background: #181818;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2em;
+  letter-spacing: 2px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  margin: 0;
+  width: 100vw;
+  height: calc(100vh - 120px); /* header+footer approx */
+  min-height: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+#editor-section {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  margin-bottom: 1.5em;
+  gap: 2em;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+#canvas-container {
+  background: #444;
+  border: 2px solid #888;
+  border-radius: 8px;
+  padding: 0.5em;
+  box-shadow: 0 2px 8px #0008;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  max-height: 80vh;
+  overflow: auto;
+}
+
+#zoom-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+#pixel-canvas {
+  background: #fff;
+  image-rendering: pixelated;
+  border: 1px solid #888;
+  cursor: crosshair;
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 80vw;
+  max-height: 60vh;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+}
+
+#tools {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  margin-left: 1em;
+  min-width: 140px;
+  max-width: 200px;
+  flex: 0 0 auto;
+}
+
+#tools label,
+#tools select,
+#tools input[type="color"] {
+  margin-bottom: 0.2em;
+}
+
+.tool {
+  background: #333;
+  color: #f0f0f0;
+  border: 1px solid #666;
+  border-radius: 4px;
+  padding: 0.4em 1em;
+  margin-bottom: 0.2em;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.tool.selected,
+.tool:active {
+  background: #f0f0f0;
+  color: #222;
+  border-color: #f0f0f0;
+}
+
+#timeline-section {
+  width: 100%;
+  margin-bottom: 1.5em;
+  flex: 0 0 auto;
+}
+
+#timeline-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  align-items: center;
+  margin-bottom: 0.7em;
+}
+
+#frames-list {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
+  overflow-x: auto;
+  min-height: 60px;
+  padding: 0.5em 0;
+}
+
+.frame-thumb {
+  width: 48px;
+  height: 48px;
+  border: 2px solid #888;
+  background: #fff;
+  image-rendering: pixelated;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: border 0.2s;
+}
+
+.frame-thumb.selected {
+  border: 2px solid #ff9800;
+}
+
+#export-section {
+  display: flex;
+  gap: 1em;
+  margin-bottom: 1.5em;
+  flex: 0 0 auto;
+}
+
+button, input[type="number"] {
+  font-size: 1em;
+}
+
+input[type="color"] {
+  width: 2.2em;
+  height: 2.2em;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+footer {
+  font-size: 1em;
+  color: #aaa;
+  background: #181818;
+  border-top: 1px solid #333;
+  position: relative;
+  width: 100vw;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  margin-bottom: 100px;
+}
+
+@media (max-width: 700px) {
+  #editor-section {
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+  }
+  main {
+    padding: 0.5em;
+    width: 100vw;
+    height: calc(100vh - 120px);
+  }
+  #pixel-canvas {
+    max-width: 98vw;
+    max-height: 40vh;
+  }
+}
