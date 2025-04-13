@@ -1,8 +1,6 @@
 # 🎨 PixelPulse Animator
 
-**The Ultimate Pixel Art Animation Studio — in Your Browser!**
 
-![PixelPulse Animator Banner](docs/banner.png) <!-- Add your own banner image here -->
 
 ---
 
@@ -39,8 +37,6 @@
 
 ## 🖼️ Screenshots
 
-> _Add your screenshots here!_  
-> ![Editor Screenshot](docs/screenshot1.png)
 
 ---
 
