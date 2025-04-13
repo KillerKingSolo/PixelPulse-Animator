@@ -1,6 +1,6 @@
 {
   "name": "animation-maker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "**The Ultimate Pixel Art Animation Studio — in Your Browser!**",
   "main": "main.js",
   "scripts": {
