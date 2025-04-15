@@ -1,8 +1,8 @@
 {
   "name": "animation-maker",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "description": "**The Ultimate Pixel Art Animation Studio — in Your Browser!**",
-  "main": "electron-main.js",
+  "main": "main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
@@ -19,35 +19,35 @@
     "electron-builder": "^26.0.12"
   },
   "build": {
-      "appId": "com.pixelpulse.animator",
-      "productName": "PixelPulse Animator",
-      "asar": true,
-      "files": [
-        "electron-main.js",
-        "**/*",
-        "!node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
-        "!node_modules/.bin",
-        "!**/*.map"
-      ],
-      "directories": {
-        "buildResources": "build"
-      },
-      "win": {
-        "target": "nsis",
-        "artifactName": "PixelPulse_Animator_Setup_${version}.exe"
-      },
-      "mac": {
-        "target": "dmg"
-      },
-      "linux": {
-        "target": "AppImage"
-      },
-      "publish": [
-        {
-          "provider": "github"
-        }
-      ]
+    "appId": "com.pixelpulse.animator",
+    "productName": "PixelPulse Animator",
+    "asar": true,
+    "files": [
+      "electron-main.js",
+      "**/*",
+      "!node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!node_modules/.bin",
+      "!**/*.map"
+    ],
+    "directories": {
+      "buildResources": "build"
     },
+    "win": {
+      "target": "nsis",
+      "artifactName": "PixelPulse_Animator_Setup_${version}.exe"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ]
+  },
   "dependencies": {
     "electron-updater": "^6.6.2"
   }
