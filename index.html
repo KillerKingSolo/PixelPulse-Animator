@@ -49,6 +49,19 @@
         </select>
         <label for="tool-size">Tool Size:</label>
         <input type="number" id="tool-size" min="1" max="10" value="1" style="width:50px;">
+        <label for="show-grid">Show Grid:</label>
+        <input type="checkbox" id="show-grid">
+      </div>
+      <div id="keybinds">
+        <h3>Keybinds</h3>
+        <ul>
+          <li>Ctrl+Z: Undo</li>
+          <li>Ctrl+Y: Redo</li>
+          <li>ArrowLeft: Previous Frame</li>
+          <li>ArrowRight: Next Frame</li>
+          <li>+: Add Frame</li>
+          <li>-: Delete Frame</li>
+        </ul>
       </div>
     </section>
     <section id="timeline-section">
@@ -56,6 +69,7 @@
         <button id="add-frame">Add Frame</button>
         <button id="duplicate-frame">Duplicate Frame</button>
         <button id="delete-frame">Delete Frame</button>
+        <button id="clear-frame">Clear All</button>
         <button id="play-animation">Play</button>
         <button id="pause-animation" disabled>Pause</button>
         <label for="fps">FPS:</label>

@@ -24,6 +24,7 @@ const addFavoriteColorBtn = document.getElementById('add-favorite-color');
 const recentColorsDiv = document.getElementById('recent-colors');
 const favoriteColorsDiv = document.getElementById('favorite-colors');
 const gridSizeSelect = document.getElementById('grid-size');
+const showGridCheckbox = document.getElementById('show-grid');
 
 const RECENT_COLORS_KEY = 'pixelArtRecentColors';
 const FAVORITE_COLORS_KEY = 'pixelArtFavoriteColors';
@@ -137,13 +138,14 @@ const framesList = document.getElementById('frames-list');
 const exportGifBtn = document.getElementById('export-gif');
 const exportPngBtn = document.getElementById('export-png');
 const downloadLink = document.getElementById('download-link');
+const clearFrameBtn = document.getElementById('clear-frame');
 
 let gridSize = parseInt(gridSizeSelect.value, 10);
 let pixelSize = canvas.width / gridSize;
 function updateCanvasSize() {
   // Base size is 256x256, scale by zoom
   const baseSize = 256;
-  const size = Math.round(baseSize * zoomFactor);
+  const size = baseSize * zoomFactor; // Don't round here
   canvas.width = size;
   canvas.height = size;
   pixelSize = size / gridSize;
@@ -161,6 +163,8 @@ let mouseStartY = 0;
 let currentFrame = 0;
 let frames = [];
 let animationInterval = null;
+const animationHistory = [];
+let historyIndex = -1;
 
 // Initialize blank frame
 function createBlankFrame() {
@@ -171,25 +175,28 @@ function createBlankFrame() {
 function drawFrame(frameData) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
-  // Snap panX/panY to integer values to keep pixels sharp
-  ctx.translate(Math.round(panX), Math.round(panY));
+  // Apply pan (no rounding for consistency with coordinate calculation)
+  ctx.translate(panX, panY);
   for (let y = 0; y < gridSize; y++) {
     for (let x = 0; x < gridSize; x++) {
       ctx.fillStyle = frameData[y * gridSize + x];
       ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
     }
   }
+
   // Draw grid lines
-  ctx.strokeStyle = '#ccc';
-  for (let i = 0; i <= gridSize; i++) {
-    ctx.beginPath();
-    ctx.moveTo(i * pixelSize, 0);
-    ctx.lineTo(i * pixelSize, canvas.height);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(0, i * pixelSize);
-    ctx.lineTo(canvas.width, i * pixelSize);
-    ctx.stroke();
+  if (showGridCheckbox && showGridCheckbox.checked) {
+    ctx.strokeStyle = '#ccc';
+    for (let i = 0; i <= gridSize; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * pixelSize, 0);
+      ctx.lineTo(i * pixelSize, canvas.height);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, i * pixelSize);
+      ctx.lineTo(canvas.width, i * pixelSize);
+      ctx.stroke();
+    }
   }
   ctx.restore();
 }
@@ -208,56 +215,21 @@ function updateDisplay() {
 // Handle drawing on the canvas
 function getPixelIndex(e) {
   const rect = canvas.getBoundingClientRect();
-  const x = Math.floor((e.clientX - rect.left) / pixelSize);
-  const y = Math.floor((e.clientY - rect.top) / pixelSize);
+  // Adjust for pan and zoom to find logical coordinates
+  // Use offsetX/Y relative to canvas. Adjust for raw pan. Divide by pixelSize.
+  // This aligns with the non-rounded canvas size and translation.
+  const x = Math.floor((e.offsetX - panX) / pixelSize);
+  const y = Math.floor((e.offsetY - panY) / pixelSize);
   if (x < 0 || y < 0 || x >= gridSize || y >= gridSize) return -1;
   return y * gridSize + x;
 }
 
-canvas.addEventListener('mousedown', (e) => {
-  if (e.button === 2) {
-    // Right mouse button: start panning
-    isPanning = true;
-    panStartX = panX;
-    panStartY = panY;
-    mouseStartX = e.clientX;
-    mouseStartY = e.clientY;
-    e.preventDefault();
-  } else if (e.button === 0) {
-    // Left mouse button: start drawing
-    isDrawing = true;
-    handleDraw(e);
-  }
-});
-canvas.addEventListener('mousemove', (e) => {
-  if (isDrawing) handleDraw(e);
-  if (isPanning) {
-    const dx = e.clientX - mouseStartX;
-    const dy = e.clientY - mouseStartY;
-    panX = panStartX + dx;
-    panY = panStartY + dy;
-    updateDisplay();
-  }
-});
-canvas.addEventListener('mouseup', (e) => {
-  if (e.button === 2) {
-    isPanning = false;
-  } else if (e.button === 0) {
-    isDrawing = false;
-  }
-});
-canvas.addEventListener('mouseleave', () => {
-  isDrawing = false;
-  isPanning = false;
-});
-// Prevent context menu on right-click
-canvas.addEventListener('contextmenu', (e) => {
-  e.preventDefault();
-});
+let drawingStroke = []; // Track pixels in current drawing stroke
 
 function handleDraw(e) {
   const idx = getPixelIndex(e);
   if (idx === -1) return;
+
   if (currentTool === 'pencil' || currentTool === 'eraser') {
     // Draw a square of toolSize x toolSize centered on the cursor
     const center = idx;
@@ -274,6 +246,9 @@ function handleDraw(e) {
         if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
           const i = y * gridSize + x;
           frames[currentFrame][i] = (currentTool === 'pencil') ? currentColor : '#ffffff';
+          if (!drawingStroke.includes(i)) {
+            drawingStroke.push(i);
+          }
         }
       }
     }
@@ -296,128 +271,68 @@ function handleDraw(e) {
   saveProgress();
 }
 
-// Flood fill algorithm for fill tool
-function floodFill(idx, targetColor, fillColor) {
-  if (targetColor === fillColor) return;
-  const visited = new Uint8Array(frames[currentFrame].length);
-  const stack = [idx];
-  while (stack.length) {
-    const i = stack.pop();
-    if (visited[i]) continue;
-    visited[i] = 1;
-    if (frames[currentFrame][i] === targetColor) {
-      frames[currentFrame][i] = fillColor;
-      const x = i % gridSize, y = Math.floor(i / gridSize);
-      if (x > 0) stack.push(i - 1);
-      if (x < gridSize - 1) stack.push(i + 1);
-      if (y > 0) stack.push(i - gridSize);
-      if (y < gridSize - 1) stack.push(i + gridSize);
-    }
+canvas.addEventListener('mousedown', (e) => {
+  if (e.button === 2) {
+    // Right mouse button: start panning
+    isPanning = true;
+    panStartX = panX;
+    panStartY = panY;
+    mouseStartX = e.clientX;
+    mouseStartY = e.clientY;
+    e.preventDefault();
+  } else if (e.button === 0) {
+    // Left mouse button: start drawing
+    isDrawing = true;
+    drawingStroke = []; // Start new drawing stroke
+    handleDraw(e);
   }
-}
-
-// Tool selection
-function selectTool(tool) {
-  currentTool = tool;
-  Object.keys(tools).forEach(t => {
-    tools[t].classList.toggle('selected', t === tool);
-  });
-}
-Object.keys(tools).forEach(tool => {
-  tools[tool].addEventListener('click', () => selectTool(tool));
 });
 
- // Color picker and hex input sync
-if (colorPicker) {
-  colorPicker.addEventListener('input', (e) => {
-    const val = e.target.value;
-    setColor(val);
-  });
-  // Only add to recent colors on 'change' (mouseup after drag)
-  colorPicker.addEventListener('change', (e) => {
-    const val = normalizeHex(e.target.value);
-    if (/^#[0-9A-F]{6}$/i.test(val)) {
-      recentColors = [val, ...recentColors.filter(c => c !== val)];
-      if (recentColors.length > MAX_RECENT_COLORS) recentColors.length = MAX_RECENT_COLORS;
-      saveColorLists();
-      renderColorSwatches();
-    }
-  });
-}
-if (hexInput) {
-  hexInput.addEventListener('input', (e) => {
-    const val = e.target.value;
-    const norm = normalizeHex(val);
-    if (norm) setColor(norm);
-  });
-  hexInput.addEventListener('blur', (e) => {
-    // On blur, correct to valid hex or revert to currentColor
-    const val = e.target.value;
-    const norm = normalizeHex(val);
-    if (norm) {
-      hexInput.value = norm;
-    } else {
-      hexInput.value = currentColor;
-    }
-  });
-}
-if (addFavoriteColorBtn) {
-  addFavoriteColorBtn.addEventListener('click', () => {
-    const color = normalizeHex(currentColor);
-    if (!color) return;
-    if (!favoriteColors.includes(color) && favoriteColors.length < MAX_FAVORITE_COLORS) {
-      favoriteColors.push(color);
-      saveColorLists();
-      renderColorSwatches();
-    }
-  });
-}
-
-  // Grid size change
-gridSizeSelect.addEventListener('change', (e) => {
-  gridSize = parseInt(e.target.value, 10);
-  // pixelSize will be set in updateCanvasSize
-  // Resize all frames
-  frames = frames.map(frame => resizeFrame(frame, gridSize));
-  updateDisplay();
-  saveProgress();
-});
-
-// Resize frame data to new grid size (simple nearest-neighbor)
-function resizeFrame(frame, newSize) {
-  const oldSize = Math.sqrt(frame.length);
-  const newFrame = [];
-  for (let y = 0; y < newSize; y++) {
-    for (let x = 0; x < newSize; x++) {
-      const oldX = Math.floor(x * oldSize / newSize);
-      const oldY = Math.floor(y * oldSize / newSize);
-      newFrame.push(frame[oldY * oldSize + oldX]);
-    }
-  }
-  return newFrame;
-}
-
- // Timeline controls
-addFrameBtn.addEventListener('click', () => {
-  frames.splice(currentFrame + 1, 0, createBlankFrame());
-  currentFrame++;
-  updateDisplay();
-  saveProgress();
-});
-duplicateFrameBtn.addEventListener('click', () => {
-  frames.splice(currentFrame + 1, 0, [...frames[currentFrame]]);
-  currentFrame++;
-  updateDisplay();
-  saveProgress();
-});
-deleteFrameBtn.addEventListener('click', () => {
-  if (frames.length > 1) {
-    frames.splice(currentFrame, 1);
-    currentFrame = Math.max(0, currentFrame - 1);
+canvas.addEventListener('mousemove', (e) => {
+  if (isDrawing) handleDraw(e);
+  if (isPanning) {
+    const dx = e.clientX - mouseStartX;
+    const dy = e.clientY - mouseStartY;
+    panX = panStartX + dx;
+    panY = panStartY + dy;
     updateDisplay();
-    saveProgress();
   }
 });
+
+canvas.addEventListener('mouseup', (e) => {
+  if (e.button === 2) {
+    isPanning = false;
+  } else if (e.button === 0) {
+    isDrawing = false;
+    if (drawingStroke.length > 0) {
+      saveStateForUndo();
+      drawingStroke = []; // Clear tracked pixels
+    }
+  }
+});
+
+canvas.addEventListener('mouseleave', () => {
+  isDrawing = false;
+  isPanning = false;
+  if (drawingStroke.length > 0) {
+    saveStateForUndo();
+    drawingStroke = []; // Clear tracked pixels
+  }
+});
+
+// Prevent context menu on right-click
+canvas.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+});
+
+clearFrameBtn.addEventListener('click', clearFrame);
+
+function clearFrame() {
+  frames[currentFrame] = createBlankFrame();
+  updateDisplay();
+  saveProgress();
+  saveStateForUndo();
+}
 
 // Render frame thumbnails
 function renderFramesList() {
@@ -460,7 +375,7 @@ function renderFramesList() {
     thumb.addEventListener('drop', (e) => {
       e.preventDefault();
       thumb.classList.remove('drag-over');
-      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+      const fromIdx = parseInt(e.dataTransfer.setData('text/plain'), 10);
       const toIdx = idx;
       if (fromIdx !== toIdx) {
         // Move frame in array
@@ -486,7 +401,7 @@ function renderFramesList() {
   framesList.ondragover = (e) => e.preventDefault();
   framesList.ondrop = (e) => {
     e.preventDefault();
-    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+    const fromIdx = parseInt(e.dataTransfer.setData('text/plain'), 10);
     if (fromIdx !== frames.length - 1) {
       const [moved] = frames.splice(fromIdx, 1);
       frames.push(moved);
@@ -526,6 +441,11 @@ fpsInput.addEventListener('change', () => {
     pauseBtn.disabled = true;
   }
   saveProgress();
+});
+
+ // Grid toggle
+showGridCheckbox.addEventListener('change', () => {
+  updateDisplay();
 });
 
 // Export as PNG
@@ -587,6 +507,39 @@ function saveProgress() {
     fps: fpsInput.value
   };
   localStorage.setItem('pixelArtAnimationProgress', JSON.stringify(data));
+}
+
+function saveStateForUndo() {
+  // Limit history size
+  const MAX_HISTORY_SIZE = 50;
+  if (animationHistory.length > MAX_HISTORY_SIZE) {
+    animationHistory.shift();
+    historyIndex--;
+  }
+  // If we are not at the end of the history, truncate the history
+  if (historyIndex < animationHistory.length - 1) {
+    animationHistory.length = historyIndex + 1;
+  }
+  animationHistory.push(JSON.parse(JSON.stringify(frames))); // Deep copy
+  historyIndex++;
+}
+
+function undo() {
+  if (historyIndex > 0) {
+    historyIndex = Math.max(0, historyIndex - 1);
+    frames = JSON.parse(JSON.stringify(animationHistory[historyIndex]));
+    currentFrame = 0;
+    updateDisplay();
+  }
+}
+
+function redo() {
+  if (historyIndex < animationHistory.length - 1) {
+    historyIndex = Math.min(animationHistory.length - 1, historyIndex + 1);
+    frames = JSON.parse(JSON.stringify(animationHistory[historyIndex]));
+     currentFrame = 0;
+    updateDisplay();
+  }
 }
 
 /**
@@ -690,3 +643,59 @@ function init() {
   }
 }
 init();
+
+function addFrame() {
+  frames.splice(currentFrame + 1, 0, createBlankFrame());
+  currentFrame++;
+  updateDisplay();
+  saveProgress();
+}
+
+function deleteFrame() {
+  if (frames.length > 1) {
+    frames.splice(currentFrame, 1);
+    currentFrame = Math.max(0, Math.min(currentFrame - 1, frames.length - 2));
+    updateDisplay();
+    saveProgress();
+    saveStateForUndo();
+  } else {
+    frames = [createBlankFrame()];
+    currentFrame = 0;
+    updateDisplay();
+    saveProgress();
+    saveStateForUndo();
+  }
+}
+
+clearFrameBtn.addEventListener('click', clearFrame);
+
+function clearFrame() {
+  frames[currentFrame] = createBlankFrame();
+  updateDisplay();
+  saveProgress();
+  saveStateForUndo();
+}
+
+// Keybinds
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'z') {
+    undo();
+  } else if (e.ctrlKey && e.key === 'y') {
+    redo();
+  } else if (e.key === 'ArrowLeft') {
+    currentFrame = Math.max(0, currentFrame - 1);
+    updateDisplay();
+  } else if (e.key === 'ArrowRight') {
+    currentFrame = Math.min(frames.length - 1, currentFrame + 1);
+    updateDisplay();
+  } else if (e.key === '+') {
+    addFrame();
+  } else if (e.key === '-') {
+    deleteFrame();
+  }
+});
+
+ // Grid toggle
+showGridCheckbox.addEventListener('change', () => {
+  updateDisplay();
+});
