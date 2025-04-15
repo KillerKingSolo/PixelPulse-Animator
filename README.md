@@ -36,6 +36,7 @@
 ---
 
 ## 🖼️ Screenshots
+![image](https://github.com/user-attachments/assets/f3528aff-afbe-4111-a086-5cccc46d3a21)
 
 
 ---
