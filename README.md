@@ -50,7 +50,7 @@
 
 ## 💡 Why PixelPulse Animator?
 
-PixelPulse Animator is designed for artists who want a fast, fun, and powerful way to create pixel art animations right in the browser. No installs, no fuss — just pure creativity.
+PixelPulse Animator is designed for artists who want a fast, fun, and powerful way to create pixel art animations right in the browser. No need to install, no fuss — just pure creativity.
 
 ---
 ---
