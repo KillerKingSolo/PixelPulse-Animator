@@ -13,14 +13,14 @@
 - **Smart Zoom & Pan**: Zoom in/out (mouse, buttons, or slider), zoom to cursor, and pan with right-click drag.
 - **Full-Screen Responsive UI**: The editor fills your screen and adapts to any device.
 - **Persistent Progress**: Your work is auto-saved and restored after refresh or browser restart.
+- **Undo/Redo Functionality**: Use Ctrl+Z / Ctrl+Y to undo and redo actions.
+- **Frame Navigation Keybinds**: Use arrow keys for frame navigation and + / - for adding/deleting frames.
+- **Clear All Button**: Clear the current frame with a single click.
+- **Grid Toggle**: Turn grid lines on and off.
+- **Improved Drawing Performance**: Drawing actions are grouped into a single undoable stroke.
 - **Advanced Color Tools**:
   - 🎨 Color picker and hex code input
   - 🕑 10 recent colors for quick access
-  - ⭐ Up to 5 favorite colors (right-click to remove)
-- **Grid Size Options**: Choose from 16x16, 32x32, or 64x64 pixel grids.
-- **Keyboard & Mouse Friendly**: Designed for fast workflow and creative flow.
-- **Made for Artists**: Clean, modern interface with pixel-perfect rendering.
-
 ---
 
 ## 🚀 Getting Started
@@ -51,6 +51,17 @@
 ## 💡 Why PixelPulse Animator?
 
 PixelPulse Animator is designed for artists who want a fast, fun, and powerful way to create pixel art animations right in the browser. No installs, no fuss — just pure creativity.
+
+---
+---
+## 🚀 What's New in v1.2.1
+
+- Fixed drawing offset when zooming.
+- Added undo/redo functionality (Ctrl+Z / Ctrl+Y).
+- Added keybinds for frame navigation (Arrow keys) and adding/deleting frames (+ / -).
+- Added a &quot;Clear All&quot; button to clear the current frame.
+- Added a toggle to turn on and off the grid lines.
+- Improved drawing performance by grouping drawing actions into a single undoable stroke.
 
 ---
 
