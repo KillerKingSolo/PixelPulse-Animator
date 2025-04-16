@@ -271,6 +271,39 @@ function handleDraw(e) {
   saveProgress();
 }
 
+// Flood fill algorithm (recursive)
+function floodFill(startIndex, targetColor, replacementColor) {
+  if (targetColor === replacementColor) return; // Avoid infinite loop
+  const frame = frames[currentFrame];
+  if (frame[startIndex] !== targetColor) return;
+
+  const stack = [startIndex];
+  const visited = new Set();
+
+  while (stack.length > 0) {
+    const index = stack.pop();
+    if (visited.has(index)) continue;
+    visited.add(index);
+
+    if (index < 0 || index >= frame.length || frame[index] !== targetColor) {
+      continue;
+    }
+
+    frame[index] = replacementColor;
+
+    const x = index % gridSize;
+    const y = Math.floor(index / gridSize);
+
+    // Check neighbors (up, down, left, right)
+    if (y > 0) stack.push(index - gridSize); // Up
+    if (y < gridSize - 1) stack.push(index + gridSize); // Down
+    if (x > 0) stack.push(index - 1); // Left
+    if (x < gridSize - 1) stack.push(index + 1); // Right
+  }
+  saveStateForUndo(); // Save state after fill completes
+}
+
+
 canvas.addEventListener('mousedown', (e) => {
   if (e.button === 2) {
     // Right mouse button: start panning
@@ -641,6 +674,81 @@ function init() {
       toolSizeInput.value = toolSize;
     });
   }
+}
+
+// Tool selection
+function selectTool(toolName) {
+  currentTool = toolName;
+  // Update button styles
+  Object.keys(tools).forEach(key => {
+    if (tools[key]) {
+      if (key === toolName) {
+        tools[key].classList.add('selected');
+      } else {
+        tools[key].classList.remove('selected');
+      }
+    }
+  });
+}
+
+// Add event listeners for tool buttons
+Object.keys(tools).forEach(key => {
+  if (tools[key]) {
+    tools[key].addEventListener('click', () => selectTool(key));
+  }
+});
+
+
+// Event listener for the main color picker input
+if (colorPicker) {
+  colorPicker.addEventListener('input', (e) => {
+    setColor(e.target.value);
+  });
+  // Also add to recent colors when the picker is closed/changed
+  colorPicker.addEventListener('change', (e) => {
+    const newColor = normalizeHex(e.target.value);
+    if (/^#[0-9A-F]{6}$/i.test(newColor)) {
+      recentColors = [newColor, ...recentColors.filter(c => c !== newColor)];
+      if (recentColors.length > MAX_RECENT_COLORS) recentColors.length = MAX_RECENT_COLORS;
+      saveColorLists();
+      renderColorSwatches();
+    }
+  });
+}
+
+// Event listener for the hex input field
+if (hexInput) {
+  hexInput.addEventListener('change', (e) => {
+    const newColor = normalizeHex(e.target.value);
+    if (newColor) {
+      setColor(newColor);
+      // Add to recent colors
+      if (/^#[0-9A-F]{6}$/i.test(newColor)) {
+        recentColors = [newColor, ...recentColors.filter(c => c !== newColor)];
+        if (recentColors.length > MAX_RECENT_COLORS) recentColors.length = MAX_RECENT_COLORS;
+        saveColorLists();
+        renderColorSwatches();
+      }
+    } else {
+      // Reset to current color if invalid hex is entered
+      hexInput.value = currentColor;
+    }
+  });
+}
+
+
+// Add favorite color
+if (addFavoriteColorBtn) {
+  addFavoriteColorBtn.addEventListener('click', () => {
+    let color = currentColor;
+    color = normalizeHex(color);
+    if (/^#[0-9A-F]{6}$/i.test(color)) {
+      favoriteColors = [color, ...favoriteColors.filter(c => c !== color)];
+      if (favoriteColors.length > MAX_FAVORITE_COLORS) favoriteColors.length = MAX_FAVORITE_COLORS;
+      saveColorLists();
+      renderColorSwatches();
+    }
+  });
 }
 init();
 
