@@ -20,14 +20,12 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Build app
-        run: |
-          if [ "${{ runner.os }}" == "Windows" ]; then
-            npm run build:win
-          elif [ "${{ runner.os }}" == "macOS" ]; then
-            npm run build:mac
-          else
-            npm run build:linux
-          fi
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          app-id: com.pixelpulse.animator
+          build-version: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
