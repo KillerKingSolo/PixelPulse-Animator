@@ -23,7 +23,7 @@
     "productName": "PixelPulse Animator",
     "asar": true,
     "files": [
-      "electron-main.js",
+      "main.js",
       "**/*",
       "!node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
       "!node_modules/.bin",
