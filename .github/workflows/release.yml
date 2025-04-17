@@ -21,13 +21,13 @@ jobs:
         run: npm install
       - name: Build app
         run: |
-          if [ "${{ runner.os }}" == "Windows" ]; then
+          if (${{ runner.os }} -eq "Windows") {
             npm run build:win
-          elif [ "${{ runner.os }}" == "macOS" ]; then
+          } elseif (${{ runner.os }} -eq "macOS") {
             npm run build:mac
-          else
+          } else {
             npm run build:linux
-          fi
+          }
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
