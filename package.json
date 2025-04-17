@@ -40,7 +40,7 @@
       "target": "dmg"
     },
     "linux": {
-      "target": "AppImage"
+      "target": "zip"
     },
     "publish": [
       {
