@@ -19,14 +19,6 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: npm install
-      - name: Kill processes (Windows only)
-        if: runner.os == 'Windows'
-        run: |
-          try {
-            Get-Process electron, "PixelPulse Animator" | Stop-Process -Force -ErrorAction SilentlyContinue
-          } catch {
-            Write-Host "No electron or PixelPulse Animator processes found to kill."
-          }
       - name: Build app
         run: |
           if [ "${{ runner.os }}" == "Windows" ]; then
