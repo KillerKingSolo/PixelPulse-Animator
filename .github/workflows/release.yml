@@ -28,9 +28,35 @@ jobs:
           } else {
             npm run build:linux
           }
-      - name: Upload release assets
-        uses: softprops/action-gh-release@v2
+      - name: Upload Windows release asset
+        if: runner.os == 'Windows'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: |
-            dist/**/*
-          token: ${{ secrets.GITHUB_TOKEN }}
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/PixelPulse_Animator_Setup_1.3.0.exe
+          asset_name: PixelPulse_Animator_Setup_1.3.0.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
+
+      - name: Upload Linux release asset
+        if: runner.os == 'Linux'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/linux-unpacked/PixelPulse Animator
+          asset_name: PixelPulse Animator-1.3.0-linux.zip
+          asset_content_type: application/zip
+
+      - name: Upload macOS release asset
+        if: runner.os == 'macOS'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/mac/PixelPulse Animator.dmg
+          asset_name: PixelPulse Animator-1.3.0-mac.dmg
+          asset_content_type: application/octet-stream
